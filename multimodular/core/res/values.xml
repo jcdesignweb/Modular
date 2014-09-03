@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<messages>
+	<errors>
+		<error type="mysql-connect">Connection failed</error>
+		<error type="mssql-connect">Connection failed with mssql</error>
+		
+		<error type="insert-params">Verify params</error>
+	</errors>
+</messages>
