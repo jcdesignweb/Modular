@@ -47,8 +47,6 @@ class Sales extends Crud{
 	
 	public function get($conditions, $fields="*", $table) {
 		parent::get($conditions, $fields, $table);
-		//print_r(  );
-		
 		
 		$sales_detail = new Sales_details($this->core);
 		

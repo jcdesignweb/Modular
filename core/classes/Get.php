@@ -50,6 +50,8 @@ class Get {
 		
 		echo $joins;
 		exit;
+		
+		
 		return $joins;
 	}
 	

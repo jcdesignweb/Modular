@@ -1,0 +1,29 @@
+{
+	"_comment": " PK = PRIMARY KEY, SK = SECONDARY KEY",
+	"sections": {
+		"sales": { "PK" : "sale_id" },
+		"sales_details": { "PK" : "sale_id_rel" },
+		"clients": { "PK" : "client_id" },
+		"products": { "PK" : "product_id"  },
+		"categories": { "PK" : "category_id" }
+	},
+	"relations": {
+		"sales": {
+			"with" : {
+				"sales_details" : "sale_id_rel"
+			}
+		},
+		"sales_details": { 
+			"with" : {
+				"products" : "sale_detail_product_id_rel"		
+			}	
+
+		},
+		"products": {
+			"with" : {
+				"categories" : "product_category_rel"		
+			}
+			
+		}
+	}
+}

@@ -22,7 +22,6 @@ $user->addUser("Ismael", "Carmena", "mail@gmail.com", date("Y-m-d H:i:s"));
 // $category = new Categories($core);
 // $category->add("autos");
 
-
 /*
  Products
  */
@@ -40,8 +39,11 @@ $user->addUser("Ismael", "Carmena", "mail@gmail.com", date("Y-m-d H:i:s"));
  Sales
 */
 
+
 $Sales = new Sales($Core);
+
 $Sale = $Sales->get(array("AND" => array("sale_total" => 500)), "*", Sale::$tblName);
+die('aa');
 print_r($Sale);
 
 /*

@@ -224,7 +224,6 @@ class Database implements iDB {
 		for($i = 0; $i < count($this->table_desc)-1; $i++) {
 			
 			if($this->table_desc[$i]["Field"] == $this->objKeys[$i]) {
-				//die("see");
 				if($this->table_desc[$i]["Key"] != "PRI") {
 					if($this->type->setType($this->table_desc[$i]["Type"]) !== $this->type->getType( $this->objValues[$i] ) ) return false;
 				}
@@ -307,7 +306,6 @@ class Database implements iDB {
 		
 		$this->sql .= Get::getRules($table);
 		
-
 		return $this;
 	}
 	
@@ -359,7 +357,6 @@ class Database implements iDB {
 		try{
 			
 			if(!empty($this->conditions) AND $this->action != self::$ACTION_ADD) $this->sql .= $this->conditions;
-		//	die($this->sql);
 			$this->stmt = $this->db->prepare($this->sql);
 				
 			if(count($this->objValues)>0) {
