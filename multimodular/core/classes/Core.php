@@ -4,7 +4,6 @@
  * @author Juan Andrés Carmena <juan14nob@gmail.com>
  * 
  */
-
 class Core {
 	
 	public $core;	
@@ -25,18 +24,18 @@ class Core {
 			$Register->utils = new Utilities();
 			
 			$this->db = $Register->db;
+
+			$this->core = $Register;
 		
 		}catch(Exception $e) {
 			die("Exception ". $e->getMessage());
 		}
 		
-		
-		
 	}
+	
 	public static function run(Register $Register) {
 		
 		$Register->db->setExternals($Register);
-		
 
 		/**
 		 * 

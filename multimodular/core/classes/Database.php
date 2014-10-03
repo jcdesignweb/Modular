@@ -4,13 +4,15 @@
 /**
  * this class has logic of work.
  *
- * @author Juan Andrés Carmmena
+ * @author Juan Andrés Carmena <juan14nob@gmail.com>
  * @since 02/09/2014
  *
  */
 require_once 'iDB.php';
+require_once 'Get.php';
 
-class Database implements iDB{
+class Database 
+	implements iDB {
 	
 	/**
 	 * CS "Connection String"
@@ -25,7 +27,6 @@ class Database implements iDB{
 	protected $sql = ""; 
 	
 	protected static $table;
-	
 	
 	/**
 	 * Is an array that set current table description 
@@ -83,8 +84,12 @@ class Database implements iDB{
 			die($xml->getMessage(self::$xml_mysqlconnection));
 		}
 	}
+	public function __destruct() {
+		$this->disconnection();
+	}
 	
 	public function setExternals($registry) {
+		//print_r($registry);exit;
 		self::$externs = $registry;
 	}
 	
@@ -122,7 +127,7 @@ class Database implements iDB{
 	/**
 	 * set Connection with MySQL db , initialize PDO
 	 */
-	final private function connection() {
+	public function connection() {
 		$server = 'mysql:host='. self::$hostname .';dbname='. self::$dbname;
 		
 		return new PDO(
@@ -133,44 +138,78 @@ class Database implements iDB{
 	}
 	
 	/**
+	 * Close Database Connection
+	 * 
+	 * (non-PHPdoc)
+	 * @see iDB::disconnection()
+	 * @access public
+	 * 
+	 */
+	public function disconnection() {
+		$this->db = null;
+	}
+	
+	/**
+	 * @return integer 
+	 * 
+	 */
+	public function getLastId() {
+		return $this->stmt->lastInsertId();
+	}
+	
+	/**
 	 * @param Array $where
 	 * @return Database $this
 	 */
-	final public function where($where=null) {
-		if(!is_null($where)) {
+	public function where($where=null) {
+		if(is_array($where)) {
 			$i=0;
-			$and = $where["AND"];
-			$totAnd = count($and)-1;
-
-			$this->conditions .= " WHERE ";
-			foreach ($and as $w_key => $w_val) {
-				
-				$this->conditions .= $w_key . " = :" . $w_key;
-				
-				$this->objKeys[] = $w_key;
-				$this->objValues[] = $w_val;
-				
-				if(is_int($w_val) || is_integer($w_val)) {
-					$this->objTypes[] = PDO::PARAM_INT;
-				}else if(is_string($w_val)) {
-					$this->objTypes[] = PDO::PARAM_STR;
+			if(key_exists("AND", $where)) {
+				$and = $where["AND"];
+				$totAnd = count($and)-1;
+	
+				if(count($and)>0) {
+					$this->conditions .= " WHERE ";
+					foreach ($and as $w_key => $w_val) {
+						
+						$this->conditions .= $w_key . " = :" . $w_key;
+						
+						$this->objKeys[] = $w_key;
+						$this->objValues[] = $w_val;
+						
+						if(is_int($w_val) || is_integer($w_val)) {
+							$this->objTypes[] = PDO::PARAM_INT;
+						}else if(is_string($w_val)) {
+							$this->objTypes[] = PDO::PARAM_STR;
+						}
+						
+						if($i < $totAnd) $this->conditions .= " AND "; 
+										
+						$i++;
+					}
 				}
 				
-				if($i < $totAnd) $this->conditions .= " AND "; 
-								
-				$i++;
-			}
+			}else { die("Verificar conditions"); }
+			
 		}
 		
 		return $this;
 	}
+	
+	
+	public function ijoin($table, $field, $fieldjoin) {
+		$this->sql .= "INNER JOIN $table ON $table . $field = ". self::$table .".$fieldjoin";
+		die($this->sql);
+	}
+	
+	
 	
 	/**
 	 * @see set "table_desc" and "primary" properties. 
 	 * @param string $table
 	 * 
 	 */
-	final private function getTableFields() {
+	private function getTableFields() {
 		$this->table_desc = $this->query("DESCRIBE ".self::$table);
 		$this->primary = $this->query("SHOW KEYS FROM ".self::$table." WHERE Key_name = 'PRIMARY'");
 	}
@@ -180,11 +219,13 @@ class Database implements iDB{
 	 * @return boolean
 	 */
 	final private function verifyParamsFields() {
+		//print_r($this->table_desc);exit;
+		//print_r($this->objKeys);exit;
 		if(count($this->table_desc) - 1  !== count($this->objKeys) ) return false;
 		for($i = 0; $i < count($this->table_desc)-1; $i++) {
 			
 			if($this->table_desc[$i]["Field"] == $this->objKeys[$i]) {
-				
+				//die("see");
 				if($this->table_desc[$i]["Key"] != "PRI") {
 					if($this->type->setType($this->table_desc[$i]["Type"]) !== $this->type->getType( $this->objValues[$i] ) ) return false;
 				}
@@ -229,19 +270,33 @@ class Database implements iDB{
 	}
 	
 	public function test($object) { 
+		
 	}
 	
-	public function select($fields="*", $table) {
+	/**
+	 * (non-PHPdoc)
+	 * @see iDB::select()
+	 * @param string|array $fields
+	 * @param string $table
+	 * @return Database $this
+	 */
+	public function select($fields, $table) {
 		self::$table = $table;
 		$this->action = self::$ACTION_GET;
 		
 		$this->sql .= "SELECT ";
 		
 		if(is_array($fields)) {
-			if(!self::$externs->utils->isAssoc($fields)) {
-				$this->sql .= implode($fields, ",");				
-			}else{ 
-				die("No debe ser un array asociativo");
+			
+			if(count($fields) > 1) {
+				//print_r(self::$externs);exit;
+				if(!self::$externs->core->utils->isAssoc($fields)) {
+					$this->sql .= implode($fields, ",");				
+				}else{ 
+					die("No debe ser un array asociativo");
+				}
+			}else{
+				$this->sql .= $fields[0];
 			}
 			
 		}else{
@@ -250,26 +305,34 @@ class Database implements iDB{
 		
 		$this->sql .= " FROM {$table} ";
 		
+		
+		$this->sql .= Get::getRules($table);
+		
+
 		return $this;
 	}
 	
 	public function update() {
 		$this->action = self::$ACTION_EDT;
 		
-			$this->sql .= "UPDATE ". self::$table. " SET ";
-			for($i = 0; $i < count($this->objKeys); $i++) {
-				
-				$this->sql .= $this->objKeys[$i]. " = :".$this->objKeys[$i];
+		$this->sql .= "UPDATE ". self::$table. " SET ";
+		for($i = 0; $i < count($this->objKeys); $i++) {
+			
+			$this->sql .= $this->objKeys[$i]. " = :".$this->objKeys[$i];
 
-				if($i != count($this->objKeys)-1) {
-					$this->sql .= ",";
-				}
+			if($i != count($this->objKeys)-1) {
+				$this->sql .= ",";
 			}
+		}
 			
 		return $this;
 	}
 	
-	
+	/**
+	 * (non-PHPdoc)
+	 * @see iDB::delete()
+	 * 
+	 */
 	public function delete($table) {
 		self::$table = $table;
 		$this->action = self::$ACTION_DEL;
@@ -297,7 +360,7 @@ class Database implements iDB{
 		try{
 			
 			if(!empty($this->conditions) AND $this->action != self::$ACTION_ADD) $this->sql .= $this->conditions;
-			
+		//	die($this->sql);
 			$this->stmt = $this->db->prepare($this->sql);
 				
 			if(count($this->objValues)>0) {
@@ -310,7 +373,11 @@ class Database implements iDB{
 				$this->reset();	
 			}
 			
-			echo $this->stmt->queryString;
+			if($this->stmt->errorInfo()[0] != 00000) {
+				print_r($this->stmt->errorInfo());
+			}
+			
+			$this->debug();
 			
 			return $this;
 				
@@ -319,6 +386,8 @@ class Database implements iDB{
 			echo "Hubo un error <br /> <br /> ";
 			$this->stmt->debugDumpParams();
 			echo $this->stmt->queryString;
+			
+			throw new Exception("Code: ". $e->getCode() . " Message: ". $e->getMessage());
 			
 			die("Code: ". $e->getCode() . " Message: ". $e->getMessage());
 		}
@@ -331,7 +400,12 @@ class Database implements iDB{
 	protected function query($sql) {
 		$this->stmt = $this->db->prepare($sql);
 		$this->stmt->execute();
-		return $this->fetch();
+		return $this;
+	}
+	
+	public function debug() {
+		//$this->stmt->debugDumpParams();
+		echo $this->stmt->queryString;
 	}
 	
 	protected function deleteAll($table) {}

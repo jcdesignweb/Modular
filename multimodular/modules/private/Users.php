@@ -13,12 +13,15 @@ class Users {
 	public function addUser($name, $subname, $email, $created) {
 		$this->User = new User($name, $subname, $email, $created);
 		
-		$this->core->db->setVals($this->User);
-		
+		$this->core->db->setVals($this->User)->insert()->exec();
 	}
 
-	public function removeUser() {
+	public function removeUser($conditions) {
 		
+		$this->core->db
+		->delete("users")
+		->where($conditions)
+		->exec();
 	}
 	public function editUser() {}
 }
