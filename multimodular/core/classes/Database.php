@@ -11,8 +11,7 @@
 require_once 'iDB.php';
 require_once 'Get.php';
 
-class Database 
-	implements iDB {
+class Database implements iDB {
 	
 	/**
 	 * CS "Connection String"

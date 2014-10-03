@@ -4,6 +4,7 @@ require_once "core/classes/Core.php";
 $Core = new Core();
 
 
+
 /*
 $user = new Users($core);
 $user->addUser("Ismael", "Carmena", "mail@gmail.com", date("Y-m-d H:i:s"));
@@ -25,7 +26,7 @@ $user->addUser("Ismael", "Carmena", "mail@gmail.com", date("Y-m-d H:i:s"));
 /*
  Products
  */
- $product = new Products($Core);
+// $product = new Products($Core);
  //$product->add("renault 18", 5000, date("Y-m-d H:i:s"), date("Y-m-d H:i:s"), 5, 84);
  //print_r($product->get());
 
